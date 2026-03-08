@@ -8,15 +8,15 @@ Detailed task breakdown derived from [Recipe.md](./Recipe.md). Each phase is spl
 
 Remote: `https://github.com/AnaghaThekkedath/recipes.git`
 
-- [ ] `git init`
-- [ ] Create `.gitignore` with entries for:
+- [x] `git init`
+- [x] Create `.gitignore` with entries for:
   - Python: `__pycache__/`, `*.pyc`, `.venv/`, `*.db`, `.env`
   - Node: `node_modules/`, `dist/`
   - IDE: `.vscode/`, `.idea/`
   - OS: `.DS_Store`, `Thumbs.db`
-- [ ] Add remote: `git remote add origin https://github.com/AnaghaThekkedath/recipes.git`
-- [ ] Initial commit with `Recipe.md`, `plan.md`, and `.gitignore`
-- [ ] Push to `main`: `git push -u origin main`
+- [x] Add remote: `git remote add origin https://github.com/AnaghaThekkedath/recipes.git`
+- [x] Initial commit with `Recipe.md`, `plan.md`, and `.gitignore`
+- [x] Push to `main`: `git push -u origin main`
 
 **Done when:** repo is live on GitHub with the three initial files.
 
@@ -26,35 +26,35 @@ Remote: `https://github.com/AnaghaThekkedath/recipes.git`
 
 ### 1.1 Project scaffold
 
-- [ ] Create `backend/` directory with `app/` package, `routers/` sub-package
-- [ ] Create `requirements.txt` with pinned versions:
-  - `fastapi`, `uvicorn[standard]`, `sqlmodel`, `alembic`, `mangum`, `libsql-experimental` (Turso driver)
-- [ ] Create `app/main.py` — FastAPI app instance, CORS middleware (allow `*` for dev, lock down later), lifespan hook to init DB
-- [ ] Add a `GET /health` endpoint that returns `{"status": "ok"}` for smoke testing
+- [x] Create `backend/` directory with `app/` package, `routers/` sub-package
+- [x] Create `requirements.txt` with pinned versions:
+  - `fastapi`, `uvicorn[standard]`, `sqlmodel`, `alembic`, `mangum`, `pydantic`
+- [x] Create `app/main.py` — FastAPI app instance, CORS middleware (allow `*` for dev, lock down later), lifespan hook to init DB
+- [x] Add a `GET /health` endpoint that returns `{"status": "ok"}` for smoke testing
 
 **Done when:** `uvicorn app.main:app --reload` starts and `/health` returns 200.
 
 ### 1.2 Database setup
 
-- [ ] Create `app/database.py`:
+- [x] Create `app/database.py`:
   - SQLite engine for local dev (`sqlite:///recipes.db`)
   - Environment variable `DATABASE_URL` to override with Turso connection string in production
   - `get_session` dependency (yields a `Session`, auto-closes)
   - `create_db_and_tables()` called on app startup
-- [ ] Initialise Alembic: `alembic init alembic`, point `sqlalchemy.url` at the same engine
-- [ ] Create initial migration after models are defined (task 1.3)
+- [ ] Initialise Alembic: `alembic init alembic`, point `sqlalchemy.url` at the same engine *(deferred — tables auto-created on startup for now)*
+- [ ] Create initial migration after models are defined (task 1.3) *(deferred)*
 
 **Done when:** app startup creates `recipes.db` with empty tables. `alembic current` shows head.
 
 ### 1.3 SQLModel table definitions
 
-- [ ] Create `app/models.py` with:
+- [x] Create `app/models.py` with:
   - `Ingredient` table — columns: `id` (UUID, default `uuid4`), `name` (unique index), `calories`, `protein_g`, `fat_g`, `carbs_g`, `fibre_g`, `default_unit`
   - `Recipe` table — columns: `id`, `title`, `description`, `servings`, `instructions` (JSON column storing `list[str]`), `created_at` (default `utcnow`)
   - `RecipeIngredient` link table — columns: `recipe_id` (FK), `ingredient_id` (FK), `quantity`, `unit`. Composite PK on `(recipe_id, ingredient_id)`
   - `MealSlot` Python enum: `breakfast`, `morning_snack`, `lunch`, `evening_snack`, `dinner`
   - `WeekSchedule` table — columns: `id`, `recipe_id` (FK), `date`, `meal_slot` (enum), `servings`. Unique constraint on `(date, meal_slot)`
-- [ ] Set up SQLModel `Relationship` fields for eager loading:
+- [x] Set up SQLModel `Relationship` fields for eager loading:
   - `Recipe.ingredients` → list of `RecipeIngredient` (with nested `Ingredient`)
   - `WeekSchedule.recipe` → `Recipe`
 
@@ -62,37 +62,37 @@ Remote: `https://github.com/AnaghaThekkedath/recipes.git`
 
 ### 1.4 Pydantic request/response schemas
 
-- [ ] Create `app/schemas.py`:
+- [x] Create `app/schemas.py`:
   - `IngredientCreate` / `IngredientUpdate` / `IngredientRead`
   - `RecipeIngredientEntry` (ingredient_id, quantity, unit) — used when creating/updating a recipe
   - `RecipeCreate` (title, description, servings, instructions: list[str], ingredients: list[RecipeIngredientEntry])
   - `RecipeUpdate` — same fields, all optional
   - `RecipeRead` — includes nested ingredients and computed nutrition fields (`total_calories`, `total_protein_g`, `total_fat_g`, `total_carbs_g`, `total_fibre_g`)
-  - Nutrition computation: a helper function or `@computed_field` that iterates over recipe ingredients and sums `(ingredient.<nutrient> * quantity / 100)`
+  - Nutrition computation: `compute_recipe_nutrition()` helper + `recipe_to_read()` converter
 
 **Done when:** schemas import cleanly, nutrition computation has a unit test.
 
 ### 1.5 Ingredient CRUD router
 
-- [ ] Create `app/routers/ingredients.py`:
+- [x] Create `app/routers/ingredients.py`:
   - `GET /ingredients` — return all ingredients, support optional `?search=` query param (name LIKE)
   - `GET /ingredients/{id}` — return single ingredient or 404
   - `POST /ingredients` — create, return 201. Reject duplicate names with 409
   - `PUT /ingredients/{id}` — partial update, return 200 or 404
   - `DELETE /ingredients/{id}` — delete, return 204 or 404. If ingredient is used in recipes, return 409 with message
-- [ ] Register router in `main.py` with prefix `/ingredients`
+- [x] Register router in `main.py` with prefix `/ingredients`
 
 **Done when:** all five endpoints work via Swagger UI (`/docs`). Test with curl or httpie.
 
 ### 1.6 Recipe CRUD router
 
-- [ ] Create `app/routers/recipes.py`:
+- [x] Create `app/routers/recipes.py`:
   - `GET /recipes` — return all recipes with nested ingredients and computed nutrition totals. Support `?search=` on title
   - `GET /recipes/{id}` — full detail with ingredients + nutrition
   - `POST /recipes` — accepts `RecipeCreate`. In a transaction: insert `Recipe`, then bulk-insert `RecipeIngredient` rows. Validate all ingredient IDs exist (422 if not). Return 201
   - `PUT /recipes/{id}` — accepts `RecipeUpdate`. Replace ingredient list if provided (delete old links, insert new). Return 200 or 404
   - `DELETE /recipes/{id}` — cascade-delete `RecipeIngredient` rows, then recipe. Return 204 or 404
-- [ ] Register router in `main.py` with prefix `/recipes`
+- [x] Register router in `main.py` with prefix `/recipes`
 
 **Done when:** can create a recipe with 3+ ingredients via Swagger, GET returns correct nutrition totals.
 
