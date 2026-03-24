@@ -18,6 +18,15 @@ source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
+### Seed the database (optional)
+
+```bash
+cd backend
+python seed.py
+```
+
+This inserts 10 common ingredients, 4 sample recipes, and a week of scheduled meals so all endpoints return meaningful data. Safe to re-run — it skips seeding if data already exists.
+
 ### Run the server
 
 ```bash
@@ -40,5 +49,5 @@ The API will be available at `http://localhost:8000`. Open `http://localhost:800
 | Health         | `GET /health`                                      |
 | Ingredients    | `GET/POST /ingredients`, `GET/PUT/DELETE /ingredients/{id}` |
 | Recipes        | `GET/POST /recipes`, `GET/PUT/DELETE /recipes/{id}` |
-| Schedule       | `GET/POST /schedule`, `DELETE /schedule/{id}` *(Phase 2)* |
-| Shopping List  | `GET /shopping-list` *(Phase 2)*                   |
+| Schedule       | `GET/POST /schedule`, `DELETE /schedule/{id}`              |
+| Shopping List  | `GET /shopping-list`                                       |

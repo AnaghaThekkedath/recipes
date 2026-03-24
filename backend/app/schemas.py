@@ -1,8 +1,10 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
+
+from app.models import MealSlot
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +99,52 @@ class RecipeRead(BaseModel):
     total_fibre_g: float = 0.0
 
     model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------------------------
+# Schedule
+# ---------------------------------------------------------------------------
+
+class ScheduleCreate(BaseModel):
+    recipe_id: uuid.UUID
+    date: date
+    meal_slot: MealSlot
+    servings: int = Field(default=1, ge=1)
+
+
+class ScheduleRead(BaseModel):
+    id: uuid.UUID
+    recipe_id: uuid.UUID
+    date: date
+    meal_slot: MealSlot
+    servings: int
+    recipe: RecipeRead
+
+    model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------------------------
+# Shopping List
+# ---------------------------------------------------------------------------
+
+class ShoppingListItem(BaseModel):
+    ingredient: IngredientRead
+    total_quantity: float
+    unit: str
+
+
+class ShoppingListTotals(BaseModel):
+    calories: float
+    protein_g: float
+    fat_g: float
+    carbs_g: float
+    fibre_g: float
+
+
+class ShoppingListResponse(BaseModel):
+    week_start: date
+    items: list[ShoppingListItem]
+    totals: ShoppingListTotals
 
 
 # ---------------------------------------------------------------------------

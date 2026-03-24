@@ -1,4 +1,4 @@
-# Implementation Plan — Recipes App
+ase# Implementation Plan — Recipes App
 
 Detailed task breakdown derived from [Recipe.md](./Recipe.md). Each phase is split into atomic tasks with acceptance criteria.
 
@@ -102,17 +102,17 @@ Remote: `https://github.com/AnaghaThekkedath/recipes.git`
 
 ### 2.1 Schedule router
 
-- [ ] Create `app/routers/schedule.py`:
+- [x] Create `app/routers/schedule.py`:
   - `GET /schedule?week_start=YYYY-MM-DD` — return all `WeekSchedule` entries for the 7-day range `[week_start, week_start + 6 days]`, each with nested `Recipe` (including ingredients + nutrition). If `week_start` is missing, default to current Monday
   - `POST /schedule` — body: `{recipe_id, date, meal_slot, servings}`. Validate: recipe exists (404), date is valid ISO (422), meal_slot is valid enum value (422), slot not already taken (409). Return 201
   - `DELETE /schedule/{id}` — remove entry, return 204 or 404
-- [ ] Register router in `main.py` with prefix `/schedule`
+- [x] Register router in `main.py` with prefix `/schedule`
 
 **Done when:** can schedule 3 meals across different days, GET returns them grouped correctly.
 
 ### 2.2 Shopping list endpoint
 
-- [ ] Create `app/routers/shopping_list.py`:
+- [x] Create `app/routers/shopping_list.py`:
   - `GET /shopping-list?week_start=YYYY-MM-DD`:
     1. Query all `WeekSchedule` entries for the 7-day window
     2. For each entry, get its recipe's `RecipeIngredient` list, scaled by `(schedule.servings / recipe.servings)`
@@ -120,17 +120,17 @@ Remote: `https://github.com/AnaghaThekkedath/recipes.git`
     4. Compute per-item nutrition: `ingredient.<nutrient> * total_quantity / 100`
     5. Compute week totals: sum all item-level nutrition
     6. Return response matching the shape in Recipe.md
-- [ ] Register router in `main.py` with prefix `/shopping-list`
+- [x] Register router in `main.py` with prefix `/shopping-list`
 
 **Done when:** schedule 5+ meals for a week, shopping list correctly aggregates duplicate ingredients and totals match hand calculation.
 
 ### 2.3 Seed data script (optional but helpful)
 
-- [ ] Create `backend/seed.py`:
+- [x] Create `backend/seed.py`:
   - Insert 8–10 common ingredients with real nutritional data (chicken, rice, eggs, broccoli, olive oil, etc.)
   - Insert 3–4 sample recipes referencing those ingredients
   - Insert a sample week schedule
-- [ ] Add `"seed"` script to a Makefile or document the command
+- [x] Add `"seed"` script to a Makefile or document the command
 
 **Done when:** running `python seed.py` populates the DB and all endpoints return meaningful data.
 
